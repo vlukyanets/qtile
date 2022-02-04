@@ -69,9 +69,6 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         ),
     ]
 
-    # Workaround for '' argument
-    _clear_layouts_command = ["setxkbmap", "-layout", '', "-variant", '', "-option", '']
-
     def __init__(self, **config):
         base.InLoopPollText.__init__(self, **config)
         self.add_defaults(KeyboardLayoutStateX11.defaults)
@@ -122,26 +119,29 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         try:
             return switch_hotkey_options[self.switch_hotkey]
         except ValueError:
-            raise ConfigError("KeyboardLayoutStateX11: unknown hotkey " + self.switch_hotkey)
+            raise ConfigError(self.__class__.__name__ + ": unknown hotkey " + self.switch_hotkey)
 
     def _configure(self, qtile: Qtile, bar):
         base.InLoopPollText._configure(self, qtile, bar)
 
         if qtile.core.name != "x11":
-            raise ConfigError("KeyboardLayoutStateX11 does not support backend: " + qtile.core.name)
+            raise ConfigError(self.__class__.__name__ + " does not support backend: " + qtile.core.name)
 
-        setxkbmap_path = shutil.which("setxkbmap")
-        if not setxkbmap_path:
-            raise ConfigError()
-        xkblayout_state_path = shutil.which("xkblayout")
+        required_programs = ["setxkbmap", "xkblayout-state"]
+        for program in required_programs:
+            path = shutil.which(program)
+            if not path:
+                raise ConfigError(self.__class__.__name__ + " requires " + program + " utility")
 
         self._option = self._generate_option()
         self._clear_old_layouts_config()
         self._configure_layouts()
 
     def _clear_old_layouts_config(self):
+        # Workaround for '' argument
+        command = ["setxkbmap", "-layout", '', "-variant", '', "-option", '']
         try:
-            subprocess.check_output(self._clear_layouts_command)
+            subprocess.check_output(command)
         except subprocess.CalledProcessError as e:
             logger.error("Can't clear old keyboard layout settings: {0}".format(e))
         except OSError as e:
@@ -159,9 +159,9 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
             logger.error("Please, check that setxkbmap is available: {0}".format(e))
 
     def get_layout(self) -> str:
-        command = "xkblayout-state print %s"
+        command = ["xkblayout-state", "print", "%s"]
         try:
-            xkblayout_state_output = subprocess.check_output(command.split(" ")).decode()
+            xkblayout_state_output = subprocess.check_output(command).decode()
             layout = xkblayout_state_output.strip()
             if layout in self.configured_layouts:
                 return layout
@@ -173,9 +173,9 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         return "unknown"
 
     def next_layout(self):
-        command = "xkblayout-state set +1"
+        command = ["xkblayout-state", "set", "+1"]
         try:
-            subprocess.check_output(command.split(" "))
+            subprocess.check_output(command)
         except subprocess.CalledProcessError as e:
             logger.error("Can't switch keyboard layout to next: {0}".format(e))
         except OSError as e:
