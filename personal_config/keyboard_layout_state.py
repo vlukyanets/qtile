@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import subprocess
+import shutil
 
 from libqtile.widget import base
 from libqtile.log_utils import logger
@@ -67,6 +68,9 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
             "Switch layout hotkey. See available options in code"
         ),
     ]
+
+    # Workaround for '' argument
+    _clear_layouts_command = ["setxkbmap", "-layout", '', "-variant", '', "-option", '']
 
     def __init__(self, **config):
         base.InLoopPollText.__init__(self, **config)
@@ -126,15 +130,18 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         if qtile.core.name != "x11":
             raise ConfigError("KeyboardLayoutStateX11 does not support backend: " + qtile.core.name)
 
+        setxkbmap_path = shutil.which("setxkbmap")
+        if not setxkbmap_path:
+            raise ConfigError()
+        xkblayout_state_path = shutil.which("xkblayout")
+
         self._option = self._generate_option()
         self._clear_old_layouts_config()
         self._configure_layouts()
 
     def _clear_old_layouts_config(self):
-        # Workaround for '' argument
-        command = ["setxkbmap", "-layout", '', "-variant", '', "-option", '']
         try:
-            subprocess.check_output(command)
+            subprocess.check_output(self._clear_layouts_command)
         except subprocess.CalledProcessError as e:
             logger.error("Can't clear old keyboard layout settings: {0}".format(e))
         except OSError as e:
@@ -166,7 +173,6 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         return "unknown"
 
     def next_layout(self):
-        logger.warning("{0}.{1}", self.__class__.__name__, "next_layout")
         command = "xkblayout-state set +1"
         try:
             subprocess.check_output(command.split(" "))

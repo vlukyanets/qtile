@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Valentin Lukyanets
+# Copyright (c) 2022 Valentin Lukyanets
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,4 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .keyboard_layout_state import KeyboardLayoutStateX11
+from libqtile.utils import guess_terminal
+
+mod = "mod4"
+terminal = guess_terminal()
+
+__all__ = ["mod", "terminal"]
