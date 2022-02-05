@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2022 Valentin Lukyanets
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -137,7 +138,8 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         self._clear_old_layouts_config()
         self._configure_layouts()
 
-    def _clear_old_layouts_config(self):
+    @staticmethod
+    def _clear_old_layouts_config():
         # Workaround for '' argument
         command = ["setxkbmap", "-layout", '', "-variant", '', "-option", '']
         try:
@@ -172,7 +174,8 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
 
         return "unknown"
 
-    def next_layout(self):
+    @staticmethod
+    def next_layout():
         command = ["xkblayout-state", "set", "+1"]
         try:
             subprocess.check_output(command)

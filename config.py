@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2010 Aldo Cortesi
 # Copyright (c) 2010, 2014 dequis
 # Copyright (c) 2012 Randall Ma
@@ -35,7 +36,7 @@ from libqtile.lazy import lazy
 from personal_config import *
 
 keys = [
-    # A list of available commands that can be bound to keys can be found
+    # A list of available commands that can be bound to key can be found
     # at https://docs.qtile.org/en/latest/manual/config/lazy.html
     # Switch between windows
     Key([mod, "shift"], "h", lazy.layout.left(), desc="Move focus to left"),
