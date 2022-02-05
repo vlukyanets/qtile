@@ -84,9 +84,12 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
 
             with open(x11_rules_file, "r") as f:
                 for line in f:
-                    option, hotkey = line.strip().split(maxsplit=1)
-                    if option.startswith("grp:") and hotkey == self.switch_hotkey:
-                        return option
+                    try:
+                        option, hotkey = line.strip().split(maxsplit=1)
+                        if option.startswith("grp:") and hotkey == self.switch_hotkey:
+                            return option
+                    except ValueError:
+                        pass
 
                 raise ConfigError(self.__class__.__name__ + ": unknown hotkey " + self.switch_hotkey)
         else:
