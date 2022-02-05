@@ -1,4 +1,5 @@
-# Copyright (C) 2022 Valentin Lukyanets
+# -*- coding: utf-8 -*-
+# Copyright (c) 2022 Valentin Lukyanets
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,7 +19,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .common import *
-from .keyboard_layout_state import *
-from .lock_screen import *
-from .autostart import *
+
+import os
+import subprocess
+
+from libqtile import hook
+from libqtile.log_utils import logger
+
+
+@hook.subscribe.startup_once
+def autostart():
+    autostart_script = os.path.expanduser("~/.config/qtile/autostart.sh")
+    subprocess.run([autostart_script])
+    logger.info(autostart_script + " launched!")
+
+
+__all__ = ["autostart"]
