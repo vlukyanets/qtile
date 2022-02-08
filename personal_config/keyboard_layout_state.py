@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2022 Valentin Lukyanets
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -64,8 +65,8 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         ),
         (
             "switch_hotkey",
-            "Left Alt+Left Shift",
-            "Switch layout hotkey. See available options in code"
+            "grp:lalt_shift_toggle",
+            "X11 keyboard options. Allowed to pass in two variants: 'grp:...' or 'Ctrl+Shift'"
         ),
     ]
 
@@ -78,48 +79,21 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         )
 
     def _generate_option(self):
-        # TODO: Read values from X11 config files
-        switch_hotkey_options = {
-            'Left Alt (while pressed)': 'grp:lswitch',
-            'Left Win (while pressed)': 'grp:lwin_switch',
-            'Right Win (while pressed)': 'grp:rwin_switch',
-            'Any Win key (while pressed)': 'grp:win_switch',
-            'Caps Lock (while pressed), Alt+Caps Lock does the original capslock action': 'grp:caps_switch',
-            'Right Ctrl (while pressed)': 'grp:rctrl_switch',
-            'Right Alt': 'grp:toggle',
-            'Left Alt': 'grp:lalt_toggle',
-            'Caps Lock': 'grp:caps_toggle',
-            'Shift+Caps Lock': 'grp:shift_caps_toggle',
-            'Caps Lock (to first layout), Shift+Caps Lock (to last layout)': 'grp:shift_caps_switch',
-            'Left Win (to first layout), Right Win/Menu (to last layout)': 'grp:win_menu_switch',
-            'Left Ctrl (to first layout), Right Ctrl (to last layout)': 'grp:lctrl_rctrl_switch',
-            'Alt+Caps Lock': 'grp:alt_caps_toggle',
-            'Both Shift keys together': 'grp:shifts_toggle',
-            'Both Alt keys together': 'grp:alts_toggle',
-            'Both Ctrl keys together': 'grp:ctrls_toggle',
-            'Ctrl+Shift': 'grp:ctrl_shift_toggle',
-            'Left Ctrl+Left Shift': 'grp:lctrl_lshift_toggle',
-            'Right Ctrl+Right Shift': 'grp:rctrl_rshift_toggle',
-            'Alt+Ctrl': 'grp:ctrl_alt_toggle',
-            'Alt+Shift': 'grp:alt_shift_toggle',
-            'Left Alt+Left Shift': 'grp:lalt_lshift_toggle',
-            'Alt+Space': 'grp:alt_space_toggle',
-            'Menu': 'grp:menu_toggle',
-            'Left Win': 'grp:lwin_toggle',
-            'Win Key+Space': 'grp:win_space_toggle',
-            'Right Win': 'grp:rwin_toggle',
-            'Left Shift': 'grp:lshift_toggle',
-            'Right Shift': 'grp:rshift_toggle',
-            'Left Ctrl': 'grp:lctrl_toggle',
-            'Right Ctrl': 'grp:rctrl_toggle',
-            'Scroll Lock': 'grp:sclk_toggle',
-            'LeftCtrl+LeftWin (to first layout), RightCtrl+Menu (to second layout)': 'grp:lctrl_lwin_rctrl_menu',
-        }
+        if not self.switch_hotkey.startswith("grp:"):
+            x11_rules_file = "/usr/share/X11/xkb/rules/base.lst"
 
-        try:
-            return switch_hotkey_options[self.switch_hotkey]
-        except ValueError:
-            raise ConfigError(self.__class__.__name__ + ": unknown hotkey " + self.switch_hotkey)
+            with open(x11_rules_file, "r") as f:
+                for line in f:
+                    try:
+                        option, hotkey = line.strip().split(maxsplit=1)
+                        if option.startswith("grp:") and hotkey == self.switch_hotkey:
+                            return option
+                    except ValueError:
+                        pass
+
+                raise ConfigError(self.__class__.__name__ + ": unknown hotkey " + self.switch_hotkey)
+        else:
+            return self.switch_hotkey
 
     def _configure(self, qtile: Qtile, bar):
         base.InLoopPollText._configure(self, qtile, bar)
@@ -137,7 +111,8 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
         self._clear_old_layouts_config()
         self._configure_layouts()
 
-    def _clear_old_layouts_config(self):
+    @staticmethod
+    def _clear_old_layouts_config():
         # Workaround for '' argument
         command = ["setxkbmap", "-layout", '', "-variant", '', "-option", '']
         try:
@@ -172,7 +147,8 @@ class KeyboardLayoutStateX11(base.InLoopPollText):
 
         return "unknown"
 
-    def next_layout(self):
+    @staticmethod
+    def next_layout():
         command = ["xkblayout-state", "set", "+1"]
         try:
             subprocess.check_output(command)

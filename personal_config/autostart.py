@@ -19,9 +19,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from libqtile.utils import guess_terminal
 
-mod = "mod4"
-terminal = guess_terminal()
+import os
+import subprocess
 
-__all__ = ["mod", "terminal"]
+from libqtile import hook
+from libqtile.log_utils import logger
+
+
+@hook.subscribe.startup_once
+def autostart():
+    autostart_script = os.path.expanduser("~/.config/qtile/autostart.sh")
+    subprocess.run([autostart_script])
+    logger.info(autostart_script + " launched!")
+
+
+__all__ = ["autostart"]

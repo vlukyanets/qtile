@@ -21,3 +21,4 @@
 from .common import *
 from .keyboard_layout_state import *
 from .lock_screen import *
+from .autostart import *

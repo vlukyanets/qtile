@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2010 Aldo Cortesi
 # Copyright (c) 2010, 2014 dequis
 # Copyright (c) 2012 Randall Ma
@@ -28,13 +29,14 @@
 from typing import List  # noqa: F401
 
 from libqtile import bar, layout, widget
+from libqtile.widget import backlight
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 
-from personal_config import KeyboardLayoutStateX11, lock_screen_keys, mod, terminal
+from personal_config import *
 
 keys = [
-    # A list of available commands that can be bound to keys can be found
+    # A list of available commands that can be bound to key can be found
     # at https://docs.qtile.org/en/latest/manual/config/lazy.html
     # Switch between windows
     Key([mod, "shift"], "h", lazy.layout.left(), desc="Move focus to left"),
@@ -72,6 +74,8 @@ keys = [
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+    Key([], "XF86MonBrightnessUp", lazy.widget["backlight"].change_backlight(backlight.ChangeDirection.UP)),
+    Key([], "XF86MonBrightnessDown", lazy.widget["backlight"].change_backlight(backlight.ChangeDirection.DOWN)),
     *lock_screen_keys,
 ]
 
@@ -137,6 +141,12 @@ screens = [
                         "launch": ("#ff0000", "#ffffff"),
                     },
                     name_transform=lambda name: name.upper(),
+                ),
+                widget.Backlight(
+                    backlight_name="intel_backlight",
+                    step=5,
+                    format="☀ {percent:2.0%}",
+                    change_command="brightnessctl set {0}%%"
                 ),
                 KeyboardLayoutStateX11(
                     configured_layouts=["us", "ru", "ua"],

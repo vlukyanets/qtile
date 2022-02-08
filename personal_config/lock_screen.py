@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2022 Valentin Lukyanets
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
